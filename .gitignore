@@ -10,6 +10,7 @@
 *.json
 
 GitTrack
+demo.tape
 
 # Test binary, built with `go test -c`
 *.test
