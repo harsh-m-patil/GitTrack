@@ -27,7 +27,7 @@ var profileCmd = &cobra.Command{
 		user := datatypes.NewUser()
 		user.SetUser(*userResp, *repoResponse)
 
-		fmt.Println(user.ToString())
+		user.PrintWithStyle()
 	},
 }
 
