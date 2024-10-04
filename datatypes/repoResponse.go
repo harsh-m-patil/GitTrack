@@ -1,6 +1,11 @@
 package datatypes
 
-import "time"
+import (
+	"fmt"
+	"time"
+
+	"github.com/harsh-m-patil/GitTrack/utils"
+)
 
 type RepoResponse []struct {
 	ID       int    `json:"id"`
@@ -25,4 +30,10 @@ type RepoResponse []struct {
 	Forks           int       `json:"forks"`
 	OpenIssues      int       `json:"open_issues"`
 	Watchers        int       `json:"watchers"`
+}
+
+// Specific function to get repository response
+func GetRepoResponse(username string) (*RepoResponse, error) {
+	reposURL := fmt.Sprintf(ReposURL, username)
+	return utils.GetResponse[RepoResponse](reposURL)
 }

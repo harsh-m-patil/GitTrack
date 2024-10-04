@@ -1,6 +1,11 @@
 package datatypes
 
-import "time"
+import (
+	"fmt"
+	"time"
+
+	"github.com/harsh-m-patil/GitTrack/utils"
+)
 
 type UserResponse struct {
 	Login           string    `json:"login"`
@@ -16,4 +21,10 @@ type UserResponse struct {
 	Followers       int       `json:"followers"`
 	Following       int       `json:"following"`
 	CreatedAt       time.Time `json:"created_at"`
+}
+
+// Specific function to get user profile
+func GetProfileResponse(username string) (*UserResponse, error) {
+	profileURL := fmt.Sprintf(UserProfileURL, username)
+	return utils.GetResponse[UserResponse](profileURL)
 }
