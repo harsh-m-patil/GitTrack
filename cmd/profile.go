@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/harsh-m-patil/GitTrack/datatypes"
@@ -22,35 +21,16 @@ var profileCmd = &cobra.Command{
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
 		username := args[0]
-		profileURL := fmt.Sprintf(datatypes.UserProfileURL, username)
-
-		resp, err := http.Get(profileURL)
+		userResp, err := getProfileResponse(username)
 		if err != nil {
-			fmt.Printf("Error Making GET request: %v\n", err)
+			fmt.Println(err)
 		}
-		defer resp.Body.Close()
+		repoResponse, err := getRepoResponse(username)
 
-		if resp.StatusCode == http.StatusNotFound {
-			fmt.Println("User not found")
-		}
+		user := datatypes.NewUser()
+		user.SetUser(*userResp, *repoResponse)
 
-		if resp.StatusCode != http.StatusOK {
-			fmt.Printf("Failed to get a valid response,Status : %d\n", resp.StatusCode)
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			fmt.Printf("Error reading response body %v\n", err)
-		}
-
-		var userResponse datatypes.UserResponse
-
-		err = json.Unmarshal(body, &userResponse)
-		if err != nil {
-			log.Printf("Error Unmarshalling JSON %v\n", err)
-		}
-
-		printProfile(userResponse)
+		fmt.Println(user.ToString())
 	},
 }
 
@@ -68,10 +48,66 @@ func init() {
 	// profileCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
 
-func printProfile(user datatypes.UserResponse) {
-	fmt.Printf("UserName : %s\n", user.Login)
-	fmt.Printf("Name : %s\n", user.Name)
-	fmt.Printf("Public Repos : %d\n", user.PublicRepos)
-	fmt.Printf("Followers : %d\n", user.Followers)
-	fmt.Printf("Following : %d\n", user.Following)
+func getProfileResponse(username string) (*datatypes.UserResponse, error) {
+	profileURL := fmt.Sprintf(datatypes.UserProfileURL, username)
+
+	resp, err := http.Get(profileURL)
+	if err != nil {
+		return nil, fmt.Errorf("error making GET request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("User not found")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Failed to get a valid response,Status : %d\n", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("Error reading response body %v\n", err)
+	}
+
+	var userResponse datatypes.UserResponse
+
+	err = json.Unmarshal(body, &userResponse)
+	if err != nil {
+		return nil, fmt.Errorf("Error Unmarshalling JSON %v\n", err)
+	}
+
+	return &userResponse, nil
+}
+
+func getRepoResponse(username string) (*datatypes.RepoResponse, error) {
+	reposURL := fmt.Sprintf(datatypes.ReposURL, username)
+
+	resp, err := http.Get(reposURL)
+	if err != nil {
+		return nil, fmt.Errorf("error making GET request: %v", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == http.StatusNotFound {
+		return nil, fmt.Errorf("User not found")
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("Failed to get a valid response,Status : %d\n", resp.StatusCode)
+	}
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("Error reading response body %v\n", err)
+	}
+
+	var repoResponse datatypes.RepoResponse
+
+	err = json.Unmarshal(body, &repoResponse)
+	if err != nil {
+		return nil, fmt.Errorf("Error Unmarshalling JSON %v\n", err)
+	}
+
+	return &repoResponse, nil
 }
