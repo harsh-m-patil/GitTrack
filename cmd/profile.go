@@ -21,8 +21,13 @@ var profileCmd = &cobra.Command{
 		userResp, err := datatypes.GetProfileResponse(username)
 		if err != nil {
 			fmt.Println(err)
+			return
 		}
 		repoResponse, err := datatypes.GetRepoResponse(username)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
 
 		user := datatypes.NewUser()
 		user.SetUser(*userResp, *repoResponse)

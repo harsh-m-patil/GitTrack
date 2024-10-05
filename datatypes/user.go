@@ -11,18 +11,19 @@ import (
 )
 
 type User struct {
-	UserName        string
-	Name            string
-	Email           string
-	Bio             string
-	PublicRepos     int
-	PublicGists     int
-	Followers       int
-	Following       int
-	CreatedAt       time.Time
-	TotalCommits    int
-	TotalStargazers int
-	UsedLanguages   []string
+	UserName         string
+	Name             string
+	Email            string
+	Bio              string
+	PublicRepos      int
+	PublicGists      int
+	Followers        int
+	Following        int
+	CreatedAt        time.Time
+	TotalCommits     int
+	TotalStargazers  int
+	UsedLanguages    []string
+	MostUsedLanguage string
 }
 
 func NewUser() *User {
@@ -42,49 +43,31 @@ func (user *User) SetUser(userResp UserResponse, repoResp RepoResponse) {
 	// TODO:
 	user.TotalCommits = 0
 
-	star_counts := 0
+	starCounts := 0
 
-	languageSet := newSet[string]()
+	// Using a map to count the occurrences of each language
+	languageCount := make(map[string]int)
 	for _, repo := range repoResp {
-		star_counts += repo.StargazersCount
+		starCounts += repo.StargazersCount
 
-		if languageSet.Contains(repo.Language) {
-			continue
+		if repo.Language != "" { // Make sure the language is not empty
+			languageCount[repo.Language]++
 		}
-
-		languageSet.Add(repo.Language)
 	}
 
-	languages := languageSet.ToSlice()
+	user.TotalStargazers = starCounts
 
-	user.TotalStargazers = star_counts
+	var languages []string
+	maxCount := 0
+	for language, count := range languageCount {
+		languages = append(languages, language)
+		if count > maxCount {
+			maxCount = count
+			user.MostUsedLanguage = language
+		}
+	}
+
 	user.UsedLanguages = languages
-}
-
-func (user *User) ToString() string {
-	// Format the creation date
-	createdAtStr := user.CreatedAt.Format("2006-01-02 15:04:05")
-
-	// Format the languages as a comma-separated string
-	languages := strings.Join(user.UsedLanguages, ", ")
-
-	// Return the formatted string
-	return fmt.Sprintf(`
-    username: %s
-    Name: %s
-    Email: %s
-    Bio: %s
-    Public Repos: %d
-    Public Gists: %d
-    Followers: %d
-    Following: %d
-    Created At: %s
-    Total Commits: %d
-    Total Stargazers: %d
-    Used Languages: %s`,
-		user.UserName, user.Name, user.Email, user.Bio, user.PublicRepos,
-		user.PublicGists, user.Followers, user.Following, createdAtStr,
-		user.TotalCommits, user.TotalStargazers, languages)
 }
 
 func (user *User) PrintWithStyle() {
@@ -147,4 +130,19 @@ func (user *User) PrintWithStyle() {
 		Rows(rows...)
 
 	fmt.Println(t)
+
+	roastStyle := lipgloss.NewStyle().
+		Bold(true).
+		Foreground(lipgloss.Color("#24292E")).       // Darker text for better contrast
+		Background(lipgloss.Color("#F6F8FA")).       // Light background color
+		Padding(1, 2).                               // Uniform padding on all sides
+		Border(lipgloss.RoundedBorder()).            // Rounded border for a smoother look
+		BorderForeground(lipgloss.Color("#0366D6")). // Blue border color for contrast
+		Width(60)                                    // Increased width for better text fit
+
+	// Render the roast message with additional styling
+	roastMessage := roastStyle.Render(RoastMe(user.MostUsedLanguage))
+
+	// Print the styled roast message
+	fmt.Println(roastMessage)
 }
