@@ -60,7 +60,7 @@ After installation, ensure that your `GOPATH/bin` directory is in your `PATH` en
 You can now run GitTrack to track your GitHub profile:
 
 ```bash
-gittrack profile your-github-username
+GitTrack profile your-github-username
 ```
 
 ## Usage
@@ -73,8 +73,6 @@ After installation, simply replace `your-github-username` with any GitHub userna
   ```bash
   ./GitTrack profile your-github-username
   ```
-
-Feel free to extend the command list as you add more features!
 
 ---
 
